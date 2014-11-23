@@ -9,6 +9,60 @@ using namespace BtxSecurity;
 
 const QString DEFAULT_BASE_URL("https://textsecure-service.whispersystems.org/");
 
+enum CommandLineParseResult {
+    CommandLineError,
+    CommandLineOk
+};
+
+// arguments for client and its call
+struct Signature {
+    QStringList clientArguments;
+    QStringList arguments;
+};
+
+CommandLineParseResult parseCommandLine(QCommandLineParser &parser, QCoreApplication &btxsecure, Signature *sig, QString *errorMessage) {
+    // options
+    const QCommandLineOption getVerificationCodeOpt(QStringList("get-verification-code"), "Get verification code");
+    parser.addOption(getVerificationCodeOpt);
+
+    const QCommandLineOption transportOpt(QStringList("transport"), "Transport for verification code. Valid: sms or voice", "transport");
+    parser.addOption(transportOpt);
+
+    const QCommandLineOption numberOpt(QStringList("number"), "Phone number for verification code. International format +358...", "number");
+    parser.addOption(numberOpt);
+
+    // positional arguments
+    parser.addPositionalArgument("baseurl", QString("Base url. Default: ") + DEFAULT_BASE_URL);
+
+    // process before access
+    parser.process(btxsecure);
+
+    // finally do something
+    const QStringList args = parser.positionalArguments();
+
+    if (args.count() == 0)
+        sig->clientArguments << DEFAULT_BASE_URL;
+    else
+        sig->clientArguments << args.at(0);
+
+    if (parser.isSet(getVerificationCodeOpt)) {
+        if (!parser.isSet(transportOpt)) {
+            *errorMessage = "Transport required";
+            return CommandLineError;
+        }
+        if (!parser.isSet(numberOpt)) {
+            *errorMessage = "Phone number required";
+            return CommandLineError;
+        }
+        sig->arguments << parser.value(transportOpt) << parser.value(numberOpt);
+    } else {
+        *errorMessage = "Command required";
+        return CommandLineError;
+    }
+
+    return CommandLineOk;
+}
+
 int main(int argc, char *argv[]) {
     // basic construction
     QCoreApplication btxsecure(argc, argv);
@@ -21,25 +75,18 @@ int main(int argc, char *argv[]) {
     parser.addHelpOption();
     parser.addVersionOption();
 
-    // positional arguments
-    parser.addPositionalArgument("baseurl", "Base url");
+    Signature sig; // These get passed to whatever we call
+    QString errorMessage;
+    switch (parseCommandLine(parser, btxsecure, &sig, &errorMessage)) {
+        case CommandLineError:
+            qCritical() << errorMessage;
+            qCritical() << argv[0] << "--help for more info";
+            return 1;
+        case CommandLineOk:
+            break;
+    }
 
-    // process before access
-    parser.process(btxsecure);
-
-    // finally do something
-    const QStringList args = parser.positionalArguments();
-
-    QString baseUrl;
-    if (args.count() == 0)
-        baseUrl = DEFAULT_BASE_URL;
-    else
-        baseUrl = args.at(0);
-
-    Q_ASSERT(baseUrl != NULL);
-    Q_ASSERT(baseUrl.startsWith("http"));
-
-    static ApiClient *client = new ApiClient(baseUrl);
+    static ApiClient *client = new ApiClient(sig.clientArguments.at(0));
 
     delete client;
     return 0;
