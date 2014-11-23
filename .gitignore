@@ -1,0 +1,7 @@
+BtxSecure
+Makefile
+moc_*cpp
+*.o
+*.pyc
+.gitignore
+
