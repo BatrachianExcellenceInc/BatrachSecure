@@ -1,4 +1,5 @@
 // vim: ts=4 sw=4 fenc=utf-8
+#include <QNetworkReply>
 #include <QObject>
 #include <QUrl>
 #include <exception>
@@ -30,15 +31,21 @@ namespace BtxSecurity {
         Q_OBJECT;
         public:
             explicit ApiClient(QString baseUrl, QObject *parent = 0);
-
             ~ApiClient();
         protected:
             // members
             QString baseUrl;
+            QNetworkAccessManager mgr;
             static const int apiVersion = 1;
 
             // methods
             QUrl genPath(QString);
+            void getResponse(QUrl);
+            void handleNetworkResponse(QNetworkReply *);
+            void handleResponse(ApiResponse *);
+            void printSslErrors(QList<QSslError>);
+        public slots:
+            void getVerificationCode(QString, QString);
     };
 }
 

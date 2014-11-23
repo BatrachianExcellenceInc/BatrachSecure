@@ -1,6 +1,11 @@
 // vim: ts=4 sw=4 fenc=utf-8
+#include <QCoreApplication>
 #include <QDebug>
+#include <QEventLoop>
 #include <QMap>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QString>
 #include <QUrl>
 #include "api_client.h"
@@ -70,6 +75,8 @@ ApiClient::ApiClient(QString baseUrl, QObject *parent) : QObject(parent) {
     if (!baseUrl.endsWith("/")) baseUrl += "/";
 
     this->baseUrl = baseUrl;
+
+    QObject::connect(&this->mgr, &QNetworkAccessManager::finished, this, &ApiClient::handleNetworkResponse);
 }
 
 QUrl ApiClient::genPath(QString path) {
@@ -79,6 +86,74 @@ QUrl ApiClient::genPath(QString path) {
     qDebug() << url.toString() << "\n";
 
     return url;
+}
+
+void ApiClient::printSslErrors(QList<QSslError> errors) {
+    QSslError error;
+    foreach (error, errors) {
+        qDebug() << "\t" << error.error();
+    }
+}
+
+void ApiClient::getResponse(QUrl url) {
+    // Request and get from manager
+    qDebug() << "getResponse" << url.toString();
+    QNetworkRequest req(url);
+    QNetworkReply *reply = this->mgr.get(req);
+
+    // XXX: This is where the ssl must be ignored for it to work
+    // but we haven't told the user yet what is ignored o_O
+    // Potentially nasty
+    reply->ignoreSslErrors();
+    QObject::connect(reply, &QNetworkReply::sslErrors, this, &ApiClient::printSslErrors);
+
+    // signal handler picks up from here
+}
+
+void ApiClient::handleNetworkResponse(QNetworkReply *reply) {
+    qDebug() << "handleNetworkResponse";
+
+    ApiResponse *res = NULL;
+    qDebug() << "error?" << reply->error();
+    if (reply->error() != QNetworkReply::NoError) {
+        // TODO: Prompt the user about this
+        if (reply->error() == QNetworkReply::SslHandshakeFailedError) {
+            qWarning() << "SSL errors";
+        } else {
+            qWarning() << "Error" << reply->error();
+        }
+    } else {
+        res = new ApiResponse();
+        res->resCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        res->resBody = reply->readAll();
+    }
+
+    if (res)
+        handleResponse(res);
+    else
+        QCoreApplication::quit();
+}
+
+void ApiClient::handleResponse(ApiResponse *res) {
+    res->validate();
+    qDebug() << res->resCode << res->resBody;
+
+    QCoreApplication::quit();
+}
+
+void ApiClient::getVerificationCode(QString transport, QString number) {
+    // Hard-code for the api
+    QString baseResource("accounts");
+    QString resource("code");
+
+    // Number contains +
+    number = QUrl::toPercentEncoding(number);
+
+    QString codePath = QString(baseResource) + QString("/") + QString(transport) + QString("/code/") + number;
+    QUrl codeUrl = this->genPath(codePath);
+
+    // Everything is handled by signals from this point on
+    this->getResponse(codeUrl);
 }
 
 ApiClient::~ApiClient() {

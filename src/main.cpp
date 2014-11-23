@@ -2,6 +2,7 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDebug>
+#include <QMetaObject>
 #include <QString>
 #include "api_client.h"
 
@@ -87,8 +88,13 @@ int main(int argc, char *argv[]) {
     }
 
     static ApiClient *client = new ApiClient(sig.clientArguments.at(0));
+    // FIXME: Need to abstract out which command we're calling when we implement more
+    /* client->getVerificationCode(sig.arguments.at(0), sig.arguments.at(1)); */
+    QMetaObject::invokeMethod(client, "getVerificationCode", Qt::QueuedConnection,
+        Q_ARG(QString, sig.arguments.at(0)), Q_ARG(QString, sig.arguments.at(1)));
 
-    delete client;
-    return 0;
+    // Stay in the event loop to keep the client available until the action is performed
+    return btxsecure.exec();
+
 }
 
