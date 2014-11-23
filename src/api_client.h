@@ -13,6 +13,19 @@ namespace BtxSecurity {
             ~ApiException() throw();
     };
 
+    class ApiResponse : public QObject {
+        Q_OBJECT;
+        public:
+            // members
+            int resCode;
+            QString resBody;
+
+            // methods
+            explicit ApiResponse(QObject *parent = 0, int resCode=0, QString resBody="(empty)");
+            void validate();
+            ~ApiResponse();
+    };
+
     class ApiClient : public QObject {
         Q_OBJECT;
         public:
