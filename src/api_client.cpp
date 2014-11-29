@@ -111,21 +111,21 @@ void ApiClient::getResponse(QUrl url) {
 }
 
 void ApiClient::handleNetworkResponse(QNetworkReply *reply) {
-    qDebug() << "handleNetworkResponse";
-
     ApiResponse *res = NULL;
-    qDebug() << "error?" << reply->error();
-    if (reply->error() != QNetworkReply::NoError) {
+    switch (reply->error()) {
+        // These are handled as API responses, though they're not ok http
+        case QNetworkReply::NoError:
+        case QNetworkReply::ProtocolInvalidOperationError:
+        case QNetworkReply::UnknownContentError:
+            res = new ApiResponse();
+            res->resCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            res->resBody = reply->readAll();
+            break;
         // TODO: Prompt the user about this
-        if (reply->error() == QNetworkReply::SslHandshakeFailedError) {
+        case QNetworkReply::SslHandshakeFailedError:
             qWarning() << "SSL errors";
-        } else {
-            qWarning() << "Error" << reply->error();
-        }
-    } else {
-        res = new ApiResponse();
-        res->resCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        res->resBody = reply->readAll();
+        default:
+            qWarning() << "Network error" << reply->error();
     }
 
     if (res)
