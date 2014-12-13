@@ -29,6 +29,7 @@ ApiException::ApiException(QString msg) : BtxException(msg){
 ApiResponse::ApiResponse(QObject *parent, int resCode, QString resBody) : QObject(parent) {
     // FIXME: This needs to be something sane. Anyone who knows c++ can give a hand.
     TEXTSECURE_ERRORS[200] = NULL;
+
     TEXTSECURE_ERRORS[400] = "Bad number or badly formatted tokens";
     TEXTSECURE_ERRORS[422] = "Invalid transport";
 
@@ -66,6 +67,10 @@ ApiResponse::~ApiResponse() {
  */
 
 ApiClient::ApiClient(QString baseUrl, QObject *parent) : QObject(parent) {
+    // First client configuration
+    this->conf = new ClientConf(QString(".btxsec"));
+
+    // Then the urls
     if (!baseUrl.endsWith("/")) baseUrl += "/";
 
     this->baseUrl = baseUrl;
@@ -131,6 +136,7 @@ void ApiClient::handleNetworkResponse(QNetworkReply *reply) {
 void ApiClient::handleResponse(ApiResponse *res) {
     res->validate();
     qDebug() << res->resCode << res->resBody;
+    delete res;
 
     QCoreApplication::quit();
 }
@@ -151,6 +157,7 @@ void ApiClient::getVerificationCode(QString transport, QString number) {
 }
 
 ApiClient::~ApiClient() {
+    delete this->conf;
     qDebug("bye");
 }
 

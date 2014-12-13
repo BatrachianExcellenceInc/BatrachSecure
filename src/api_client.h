@@ -3,6 +3,9 @@
 #include <QObject>
 #include <QUrl>
 #include "btx_exception.h"
+#include "client_conf.h"
+#include "keyhelper.h"
+
 
 namespace BtxSecurity {
     class ApiException : public BtxException {
@@ -11,7 +14,7 @@ namespace BtxSecurity {
     };
 
     class ApiResponse : public QObject {
-        Q_OBJECT;
+        Q_OBJECT
         public:
             // members
             int resCode;
@@ -24,7 +27,7 @@ namespace BtxSecurity {
     };
 
     class ApiClient : public QObject {
-        Q_OBJECT;
+        Q_OBJECT
         public:
             explicit ApiClient(QString baseUrl, QObject *parent = 0);
             ~ApiClient();
@@ -32,9 +35,11 @@ namespace BtxSecurity {
             // members
             QString baseUrl;
             QNetworkAccessManager mgr;
+            ClientConf *conf;
             static const int apiVersion = 1;
 
             // methods
+            void checkInstallation();
             QUrl genPath(QString);
             void getResponse(QUrl);
             void handleNetworkResponse(QNetworkReply *);
