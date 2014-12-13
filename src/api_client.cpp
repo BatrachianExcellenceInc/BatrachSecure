@@ -47,10 +47,10 @@ void ApiResponse::validate() {
     QString errorMessage;
     if (!TEXTSECURE_ERRORS.contains(this->resCode)) {
         errorMessage = QString("Unknown return code ") + QString::number(this->resCode);
-        throw ApiException(errorMessage.toStdString().c_str());
+    } else {
+        errorMessage = TEXTSECURE_ERRORS[this->resCode];
     }
 
-    errorMessage = TEXTSECURE_ERRORS[this->resCode];
     if (errorMessage.length()) throw ApiException(errorMessage);
 }
 
