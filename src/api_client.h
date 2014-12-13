@@ -2,16 +2,12 @@
 #include <QNetworkReply>
 #include <QObject>
 #include <QUrl>
-#include <exception>
+#include "btx_exception.h"
 
 namespace BtxSecurity {
-    class ApiException : public std::exception {
-        private:
-            QString msg;
+    class ApiException : public BtxException {
         public:
             ApiException(QString msg);
-            virtual const char* what() const throw();
-            ~ApiException() throw();
     };
 
     class ApiResponse : public QObject {

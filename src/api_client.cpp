@@ -19,16 +19,7 @@ QMap<int, const char *> TEXTSECURE_ERRORS;
  * EXCEPTION
  */
 
-ApiException::ApiException(QString msg) {
-    this->msg = msg;
-}
-
-const char* ApiException::what() const throw() {
-    return this->msg.toStdString().c_str();
-}
-
-ApiException::~ApiException() throw() {
-    qDebug("destroy exception");
+ApiException::ApiException(QString msg) : BtxException(msg){
 }
 
 /*
