@@ -15,9 +15,15 @@ enum CommandLineParseResult {
     CommandLineOk
 };
 
+// This is explained in main()
+enum ClientMethods {
+    GET_VERIFICATION_CODE,
+};
+
 // arguments for client and its call
 struct Signature {
     QStringList clientArguments;
+    int methId;
     QStringList arguments;
 };
 
@@ -55,6 +61,7 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, QCoreApplica
             *errorMessage = "Phone number required";
             return CommandLineError;
         }
+        sig->methId = ClientMethods::GET_VERIFICATION_CODE;
         sig->arguments << parser.value(transportOpt) << parser.value(numberOpt);
     } else {
         *errorMessage = "Command required";
@@ -88,13 +95,25 @@ int main(int argc, char *argv[]) {
     }
 
     static ApiClient *client = new ApiClient(sig.clientArguments.at(0));
-    // FIXME: Need to abstract out which command we're calling when we implement more
-    /* client->getVerificationCode(sig.arguments.at(0), sig.arguments.at(1)); */
-    QMetaObject::invokeMethod(client, "getVerificationCode", Qt::QueuedConnection,
-        Q_ARG(QString, sig.arguments.at(0)), Q_ARG(QString, sig.arguments.at(1)));
+
+    // Passing the method name like QString.toStdString().c_str() will get
+    // qt5 stuck waiting for godot.
+    // Assigning that to a variable and then calling also gets stuck.
+    bool valid = true;
+    switch (sig.methId) {
+        case ClientMethods::GET_VERIFICATION_CODE:
+            QMetaObject::invokeMethod(client, "getVerificationCode", Qt::QueuedConnection,
+                Q_ARG(QString, sig.arguments.at(0)), Q_ARG(QString, sig.arguments.at(1)));
+                break;
+        default:
+                qDebug() << "Unknown method id" << sig.methId;
+                valid = false;
+    }
 
     // Stay in the event loop to keep the client available until the action is performed
-    return btxsecure.exec();
+    if (valid)
+        return btxsecure.exec();
+    return 1;
 
 }
 
