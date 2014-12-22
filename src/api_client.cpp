@@ -30,6 +30,9 @@ ApiResponse::ApiResponse(QObject *parent, int resCode, QString resBody) : QObjec
     // FIXME: This needs to be something sane. Anyone who knows c++ can give a hand.
     TEXTSECURE_ERRORS[200] = NULL;
     TEXTSECURE_ERRORS[400] = "Bad number or badly formatted tokens";
+    TEXTSECURE_ERRORS[422] = "Invalid transport";
+
+    // These may be crap
     TEXTSECURE_ERRORS[401] = "Badly formatted basic_auth or invalid credentials";
     TEXTSECURE_ERRORS[403] = "Incorrect verification_code";
     TEXTSECURE_ERRORS[404] = "Unknown/unregistered number";
