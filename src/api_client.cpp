@@ -19,16 +19,7 @@ QMap<int, const char *> TEXTSECURE_ERRORS;
  * EXCEPTION
  */
 
-ApiException::ApiException(QString msg) {
-    this->msg = msg;
-}
-
-const char* ApiException::what() const throw() {
-    return this->msg.toStdString().c_str();
-}
-
-ApiException::~ApiException() throw() {
-    qDebug("destroy exception");
+ApiException::ApiException(QString msg) : BtxException(msg){
 }
 
 /*
@@ -38,7 +29,11 @@ ApiException::~ApiException() throw() {
 ApiResponse::ApiResponse(QObject *parent, int resCode, QString resBody) : QObject(parent) {
     // FIXME: This needs to be something sane. Anyone who knows c++ can give a hand.
     TEXTSECURE_ERRORS[200] = NULL;
+
     TEXTSECURE_ERRORS[400] = "Bad number or badly formatted tokens";
+    TEXTSECURE_ERRORS[422] = "Invalid transport";
+
+    // These may be crap
     TEXTSECURE_ERRORS[401] = "Badly formatted basic_auth or invalid credentials";
     TEXTSECURE_ERRORS[403] = "Incorrect verification_code";
     TEXTSECURE_ERRORS[404] = "Unknown/unregistered number";
@@ -56,10 +51,10 @@ void ApiResponse::validate() {
     QString errorMessage;
     if (!TEXTSECURE_ERRORS.contains(this->resCode)) {
         errorMessage = QString("Unknown return code ") + QString::number(this->resCode);
-        throw ApiException(errorMessage.toStdString().c_str());
+    } else {
+        errorMessage = TEXTSECURE_ERRORS[this->resCode];
     }
 
-    errorMessage = TEXTSECURE_ERRORS[this->resCode];
     if (errorMessage.length()) throw ApiException(errorMessage);
 }
 
@@ -72,6 +67,10 @@ ApiResponse::~ApiResponse() {
  */
 
 ApiClient::ApiClient(QString baseUrl, QObject *parent) : QObject(parent) {
+    // First client configuration
+    this->conf = new ClientConf(QString(".btxsec"));
+
+    // Then the urls
     if (!baseUrl.endsWith("/")) baseUrl += "/";
 
     this->baseUrl = baseUrl;
@@ -137,6 +136,7 @@ void ApiClient::handleNetworkResponse(QNetworkReply *reply) {
 void ApiClient::handleResponse(ApiResponse *res) {
     res->validate();
     qDebug() << res->resCode << res->resBody;
+    delete res;
 
     QCoreApplication::quit();
 }
@@ -157,6 +157,7 @@ void ApiClient::getVerificationCode(QString transport, QString number) {
 }
 
 ApiClient::~ApiClient() {
+    delete this->conf;
     qDebug("bye");
 }
 

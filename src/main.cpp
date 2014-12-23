@@ -111,9 +111,11 @@ int main(int argc, char *argv[]) {
     }
 
     // Stay in the event loop to keep the client available until the action is performed
+    int retval = 1;
     if (valid)
-        return btxsecure.exec();
-    return 1;
+        retval = btxsecure.exec();
 
+    delete client;
+    return retval;
 }
 
