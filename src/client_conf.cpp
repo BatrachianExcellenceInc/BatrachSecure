@@ -47,7 +47,7 @@ void ClientConf::verifyRegistrationId() {
 
     qDebug() << regIdFilePath;
     if (!regIdFile.exists()) {
-        this->registrationId = this->keyHelper.generate_registration_id();
+        this->registrationId = this->keyHelper.generateRegistrationId();
 
         qDebug() << "Generated registration id" << this->registrationId;
 
@@ -79,19 +79,19 @@ void ClientConf::verifyIdentityKeyPair() {
 
     qDebug() << ikpFilePath;
     if (!ikpFile.exists()) {
-        this->identityKeyPair = this->keyHelper.generate_identity_key_pair();
+        this->identityKeyPair = this->keyHelper.generateIdentityKeyPair();
 
         if (!ikpFile.open(QIODevice::WriteOnly))
             throw ClientConfException(QString("Could not create identity key file " + ikpFilePath));
 
         // Get private key from generated pair
-        std::vector<unsigned char> stdPrivateKey = this->identityKeyPair.get_private_key().serialize();
+        std::vector<unsigned char> stdPrivateKey = this->identityKeyPair.getPrivateKey().serialize();
         Q_ASSERT_X(stdPrivateKey.size() == 32, "verifyIdentityKeyPair private", QString::number(stdPrivateKey.size()).toStdString().c_str());
         QVector<unsigned char> privateKey = QVector<unsigned char>::fromStdVector(stdPrivateKey);
         Q_ASSERT_X(privateKey.size() == 32, "verifyIdentityKeyPair private", QString::number(privateKey.size()).toStdString().c_str());
 
         // Get public key from generated pair
-        std::vector<unsigned char> stdPublicKey = this->identityKeyPair.get_public_key().serialize();
+        std::vector<unsigned char> stdPublicKey = this->identityKeyPair.getPublicKey().serialize();
         stdPublicKey.erase(stdPublicKey.begin()); // The serialized type is not required
         Q_ASSERT_X(stdPublicKey.size() == 32, "verifyIdentityKeyPair public", QString::number(stdPublicKey.size()).toStdString().c_str());
         QVector<unsigned char> publicKey = QVector<unsigned char>::fromStdVector(stdPublicKey);
