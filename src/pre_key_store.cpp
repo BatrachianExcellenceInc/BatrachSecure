@@ -28,8 +28,10 @@ BtxPreKeyStore::BtxPreKeyStore(QString preKeyDir, QString signedPreKeyDir, KeyHe
     this->keyHelper = keyHelper;
 
     this->verifyPreKeyDir();
+    this->verifySignedPreKeyDir();
 
     this->verifyPreKeys();
+    this->verifyLastResortPreKey();
 }
 
 QString BtxPreKeyStore::getKeyFile(qulonglong pre_key_id) {
@@ -47,6 +49,15 @@ void BtxPreKeyStore::verifyPreKeyDir() {
     }
 }
 
+void BtxPreKeyStore::verifySignedPreKeyDir() {
+    if (!this->signedPreKeyDir.exists()) {
+        qDebug() << "Creating" << this->signedPreKeyDirPath;
+        if (!this->signedPreKeyDir.mkpath(this->signedPreKeyDirPath)) {
+            throw PreKeyStoreException(QString("Could not create conf dir " + this->signedPreKeyDirPath));
+        }
+    }
+}
+
 void BtxPreKeyStore::verifyPreKeys() {
     qulonglong startId = this->getNextPreKeyId();
     int count = 100;
@@ -57,6 +68,27 @@ void BtxPreKeyStore::verifyPreKeys() {
         this->storePreKey(pkr.getId(), pkr);
     }
     this->setNextPreKeyId((startId + count + 1) % Medium::MAX_VALUE);
+}
+
+void BtxPreKeyStore::verifyLastResortPreKey() {
+    qulonglong maxId = Medium::MAX_VALUE;
+
+    if (this->containsPreKey(maxId)) return;
+
+    qDebug() << "last resort maxId" << maxId;
+    int count = 1;
+
+    QList<PreKeyRecord> lastResortKeys = this->keyHelper.generatePreKeys(maxId, count);
+    PreKeyRecord record = lastResortKeys.at(0);
+
+    QFile keyFile(this->getKeyFile(maxId));
+
+    if (!keyFile.open(QIODevice::WriteOnly)) {
+        throw PreKeyStoreException(QString("Could not create last resort key file " + keyFile.fileName()));
+    }
+
+    // TODO: the encryption stuff
+    this->storePreKey(maxId, record);
 }
 
 PreKeyRecord BtxPreKeyStore::loadPreKey(qulonglong preKeyId) {

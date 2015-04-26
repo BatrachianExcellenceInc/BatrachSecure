@@ -28,6 +28,7 @@ namespace BtxSecurity {
             void verifyPreKeyDir();
             void verifySignedPreKeyDir();
             void verifyPreKeys();
+            void verifyLastResortPreKey();
 
             PreKeyRecord loadPreKey(qulonglong preKeyId);
             void storePreKey(qulonglong preKeyId, const PreKeyRecord &record);
