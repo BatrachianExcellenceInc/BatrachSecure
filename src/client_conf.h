@@ -3,6 +3,7 @@
 #include <QObject>
 #include <stdint.h>
 #include "btx_exception.h"
+#include "pre_key_store.h"
 #include "util/keyhelper.h"
 
 namespace BtxSecurity {
@@ -19,6 +20,7 @@ namespace BtxSecurity {
         private:
             // members
             KeyHelper keyHelper;
+            BtxPreKeyStore preKeyStore;
             QString confDirPath;
             QDir confDir;
 
