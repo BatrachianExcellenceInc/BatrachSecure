@@ -127,10 +127,11 @@ void ApiClient::handleNetworkResponse(QNetworkReply *reply) {
             qWarning() << "Network error" << reply->error();
     }
 
-    if (res)
+    if (res) {
         handleResponse(res);
-    else
+    } else {
         QCoreApplication::quit();
+    }
 }
 
 void ApiClient::handleResponse(ApiResponse *res) {
