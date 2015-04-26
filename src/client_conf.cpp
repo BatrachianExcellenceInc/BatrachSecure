@@ -7,8 +7,8 @@
 #include <QVector>
 #include <stdlib.h>
 #include "client_conf.h"
-#include "eckeys.h"
-#include "keyhelper.h"
+#include "ecc/eckeypair.h"
+#include "util/keyhelper.h"
 
 using namespace BtxSecurity;
 
@@ -57,8 +57,6 @@ void ClientConf::verifyRegistrationId() {
         // Because we want to write easily
         QDataStream regIdFileStream(&regIdFile);
         regIdFileStream << this->registrationId << "\r\n";
-        Q_ASSERT((this->registrationId & 0x3fff) == this->registrationId);
-        Q_ASSERT((this->registrationId & ~0x3fff) == 0);
     } else {
         if (!regIdFile.open(QIODevice::ReadOnly))
             throw ClientConfException(QString("Could not open registration id file " + regIdFilePath));
@@ -68,8 +66,6 @@ void ClientConf::verifyRegistrationId() {
         regIdFileStream >> this->registrationId;
 
         qDebug() << "Read registration id" << this->registrationId;
-        Q_ASSERT((this->registrationId & 0x3fff) == this->registrationId);
-        Q_ASSERT((this->registrationId & ~0x3fff) == 0);
     }
 }
 
@@ -85,17 +81,10 @@ void ClientConf::verifyIdentityKeyPair() {
             throw ClientConfException(QString("Could not create identity key file " + ikpFilePath));
 
         // Get private key from generated pair
-        std::vector<unsigned char> stdPrivateKey = this->identityKeyPair.getPrivateKey().serialize();
-        Q_ASSERT_X(stdPrivateKey.size() == 32, "verifyIdentityKeyPair private", QString::number(stdPrivateKey.size()).toStdString().c_str());
-        QVector<unsigned char> privateKey = QVector<unsigned char>::fromStdVector(stdPrivateKey);
-        Q_ASSERT_X(privateKey.size() == 32, "verifyIdentityKeyPair private", QString::number(privateKey.size()).toStdString().c_str());
+        QByteArray privateKey = this->identityKeyPair.getPrivateKey().serialize();
 
         // Get public key from generated pair
-        std::vector<unsigned char> stdPublicKey = this->identityKeyPair.getPublicKey().serialize();
-        stdPublicKey.erase(stdPublicKey.begin()); // The serialized type is not required
-        Q_ASSERT_X(stdPublicKey.size() == 32, "verifyIdentityKeyPair public", QString::number(stdPublicKey.size()).toStdString().c_str());
-        QVector<unsigned char> publicKey = QVector<unsigned char>::fromStdVector(stdPublicKey);
-        Q_ASSERT_X(publicKey.size() == 32, "verifyIdentityKeyPair public", QString::number(publicKey.size()).toStdString().c_str());
+        QByteArray publicKey = this->identityKeyPair.getPublicKey().serialize();
 
         qDebug() << "Generated identity" << privateKey.size() << "|" << publicKey.size();
 
@@ -103,8 +92,8 @@ void ClientConf::verifyIdentityKeyPair() {
         QDataStream ikpFileStream(&ikpFile);
         ikpFileStream << privateKey << publicKey;
     } else {
-        QVector<unsigned char> privateKey;
-        QVector<unsigned char> publicKey;
+        QByteArray privateKey;
+        QByteArray publicKey;
 
         if (!ikpFile.open(QIODevice::ReadOnly))
             throw ClientConfException(QString("Could not open identity key file " + ikpFilePath));
@@ -115,10 +104,10 @@ void ClientConf::verifyIdentityKeyPair() {
 
         qDebug() << "Read identity" << privateKey.size() << "|" << publicKey.size();
 
-        ECPublicKey ecPublicKey(publicKey.toStdVector());
-        ECPrivateKey ecPrivateKey(privateKey.toStdVector());
+        IdentityKey ikPublic(publicKey);
+        DjbECPrivateKey ecPrivate(privateKey);
 
-        this->identityKeyPair = ECKeyPair(ecPublicKey, ecPrivateKey);
+        this->identityKeyPair = IdentityKeyPair(ikPublic, ecPrivate);
     }
 }
 

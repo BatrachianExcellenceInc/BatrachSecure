@@ -3,7 +3,7 @@
 #include <QObject>
 #include <stdint.h>
 #include "btx_exception.h"
-#include "keyhelper.h"
+#include "util/keyhelper.h"
 
 namespace BtxSecurity {
     class ClientConfException : public BtxException {
@@ -22,8 +22,8 @@ namespace BtxSecurity {
             QString confDirPath;
             QDir confDir;
 
-            uint16_t registrationId;
-            ECKeyPair identityKeyPair;
+            quint64 registrationId;
+            IdentityKeyPair identityKeyPair;
 
             // methods
             void verifyConfDir();

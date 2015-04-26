@@ -4,7 +4,7 @@
 #include <QUrl>
 #include "btx_exception.h"
 #include "client_conf.h"
-#include "keyhelper.h"
+#include "util/keyhelper.h"
 
 
 namespace BtxSecurity {
