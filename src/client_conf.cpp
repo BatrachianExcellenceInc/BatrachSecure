@@ -36,8 +36,9 @@ ClientConf::ClientConf(QString confDir, QObject *parent) : QObject(parent) {
 void ClientConf::verifyConfDir() {
     if (!this->confDir.exists()) {
         qDebug() << "Creating" << this->confDirPath;
-        if (!this->confDir.mkpath(this->confDirPath))
+        if (!this->confDir.mkpath(this->confDirPath)) {
             throw ClientConfException(QString("Could not create conf dir " + this->confDirPath));
+        }
     }
 }
 
@@ -51,15 +52,17 @@ void ClientConf::verifyRegistrationId() {
 
         qDebug() << "Generated registration id" << this->registrationId;
 
-        if (!regIdFile.open(QIODevice::WriteOnly))
+        if (!regIdFile.open(QIODevice::WriteOnly)) {
             throw ClientConfException(QString("Could not create registration id file " + regIdFilePath));
+        }
 
         // Because we want to write easily
         QDataStream regIdFileStream(&regIdFile);
         regIdFileStream << this->registrationId << "\r\n";
     } else {
-        if (!regIdFile.open(QIODevice::ReadOnly))
+        if (!regIdFile.open(QIODevice::ReadOnly)) {
             throw ClientConfException(QString("Could not open registration id file " + regIdFilePath));
+        }
 
         // Read similarly
         QDataStream regIdFileStream(&regIdFile);
@@ -77,8 +80,9 @@ void ClientConf::verifyIdentityKeyPair() {
     if (!ikpFile.exists()) {
         this->identityKeyPair = this->keyHelper.generateIdentityKeyPair();
 
-        if (!ikpFile.open(QIODevice::WriteOnly))
+        if (!ikpFile.open(QIODevice::WriteOnly)) {
             throw ClientConfException(QString("Could not create identity key file " + ikpFilePath));
+        }
 
         // Get private key from generated pair
         QByteArray privateKey = this->identityKeyPair.getPrivateKey().serialize();
@@ -95,8 +99,9 @@ void ClientConf::verifyIdentityKeyPair() {
         QByteArray privateKey;
         QByteArray publicKey;
 
-        if (!ikpFile.open(QIODevice::ReadOnly))
+        if (!ikpFile.open(QIODevice::ReadOnly)) {
             throw ClientConfException(QString("Could not open identity key file " + ikpFilePath));
+        }
 
         // Read from file
         QDataStream ikpFileStream(&ikpFile);
