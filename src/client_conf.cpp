@@ -31,6 +31,8 @@ ClientConf::ClientConf(QString confDir, QObject *parent) : QObject(parent) {
     this->verifyConfDir();
     this->verifyRegistrationId();
     this->verifyIdentityKeyPair();
+
+    this->preKeyStore = BtxPreKeyStore(this->confDirPath + QString("/prekeys"), this->confDirPath + QString("/signed_prekeys"), this->keyHelper);
 }
 
 void ClientConf::verifyConfDir() {
