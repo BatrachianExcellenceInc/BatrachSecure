@@ -64,7 +64,7 @@ void BtxPreKeyStore::verifyPreKeys() {
     QList<PreKeyRecord> keys = this->keyHelper.generatePreKeys(startId, count);
     Q_ASSERT(keys.size() == count);
     for (PreKeyRecord pkr : keys) {
-        qDebug() << "Storing prekey" << QString::number(pkr.getId());
+        // qDebug() << "Storing prekey" << QString::number(pkr.getId());
         this->storePreKey(pkr.getId(), pkr);
     }
     this->setNextPreKeyId((startId + count + 1) % Medium::MAX_VALUE);
@@ -122,7 +122,7 @@ void BtxPreKeyStore::storePreKey(qulonglong preKeyId, const PreKeyRecord &record
 
     QByteArray data;
     data = record.serialize();
-    qDebug() << "Serialized to string" << data.size();
+    // qDebug() << "Serialized to string" << data.size();
 
     keyFileStream << data;
 }
