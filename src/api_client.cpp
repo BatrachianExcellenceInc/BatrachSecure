@@ -29,6 +29,7 @@ ApiException::ApiException(QString msg) : BtxException(msg){
 ApiResponse::ApiResponse(QObject *parent, int resCode, QString resBody) : QObject(parent) {
     // FIXME: This needs to be something sane. Anyone who knows c++ can give a hand.
     TEXTSECURE_ERRORS[200] = NULL;
+    TEXTSECURE_ERRORS[204] = NULL;
 
     TEXTSECURE_ERRORS[400] = "Bad number or badly formatted tokens";
     TEXTSECURE_ERRORS[422] = "Invalid transport";
