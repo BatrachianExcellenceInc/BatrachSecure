@@ -16,20 +16,32 @@ namespace BtxSecurity {
         Q_OBJECT
         public:
             // methods
-            explicit ClientConf(QString confDir, QObject *parent = 0);
+            explicit ClientConf(QString, QString, QString, QObject *parent = 0);
+            QString getBaseUrl();
+            QString getNumber();
+            QString getPassword();
+            quint64 getRegistrationId();
+            QByteArray getSignalingKey();
         private:
             // members
             KeyHelper keyHelper;
             BtxPreKeyStore preKeyStore;
+            QString baseUrl;
             QString confDirPath;
             QDir confDir;
 
+            QString number;
+            QString password;
             quint64 registrationId;
+            QByteArray signalingKey;
             IdentityKeyPair identityKeyPair;
 
             // methods
             void verifyConfDir();
+            void verifyNumber();
+            void verifyPassword();
             void verifyRegistrationId();
+            void verifySignalingKey();
             void verifyIdentityKeyPair();
     };
 }
