@@ -67,22 +67,15 @@ ApiResponse::~ApiResponse() {
  * CLIENT
  */
 
-ApiClient::ApiClient(QString baseUrl, QObject *parent) : QObject(parent) {
-    // First client configuration
-    this->conf = new ClientConf(QString(".btxsec"));
-
-    // Then the urls
-    if (!baseUrl.endsWith("/")) baseUrl += "/";
-
-    this->baseUrl = baseUrl;
-
+ApiClient::ApiClient(ClientConf *conf, QObject *parent) : QObject(parent) {
+    this->conf = conf;
     QObject::connect(&this->mgr, &QNetworkAccessManager::finished, this, &ApiClient::handleNetworkResponse);
 }
 
 QUrl ApiClient::genPath(QString path) {
     if (!path.startsWith("/")) path = "/" + path;
 
-    QUrl url = baseUrl + QString("v") + QString::number(ApiClient::apiVersion) + path;
+    QUrl url = this->conf->getBaseUrl() + QString("v") + QString::number(ApiClient::apiVersion) + path;
     qDebug() << url.toString() << "\n";
 
     return url;
@@ -143,13 +136,13 @@ void ApiClient::handleResponse(ApiResponse *res) {
     QCoreApplication::quit();
 }
 
-void ApiClient::getVerificationCode(QString transport, QString number) {
+void ApiClient::getVerificationCode(QString transport) {
     // Hard-code for the api
     QString baseResource("accounts");
     QString resource("code");
 
     // Number contains +
-    number = QUrl::toPercentEncoding(number);
+    QString number = QUrl::toPercentEncoding(this->conf->getNumber());
 
     QString codePath = QString(baseResource) + QString("/") + QString(transport) + QString("/code/") + number;
     QUrl codeUrl = this->genPath(codePath);

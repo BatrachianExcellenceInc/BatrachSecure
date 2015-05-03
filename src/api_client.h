@@ -29,11 +29,10 @@ namespace BtxSecurity {
     class ApiClient : public QObject {
         Q_OBJECT
         public:
-            explicit ApiClient(QString baseUrl, QObject *parent = 0);
+            explicit ApiClient(ClientConf *conf, QObject *parent = 0);
             ~ApiClient();
         protected:
             // members
-            QString baseUrl;
             QNetworkAccessManager mgr;
             ClientConf *conf;
             static const int apiVersion = 1;
@@ -46,7 +45,7 @@ namespace BtxSecurity {
             void handleResponse(ApiResponse *);
             void printSslErrors(QList<QSslError>);
         public slots:
-            void getVerificationCode(QString, QString);
+            void getVerificationCode(QString);
     };
 }
 
