@@ -41,11 +41,13 @@ namespace BtxSecurity {
             void checkInstallation();
             QUrl genPath(QString);
             void getResponse(QUrl);
+            void putResponse(QUrl, QString, QString);
             void handleNetworkResponse(QNetworkReply *);
             void handleResponse(ApiResponse *);
             void printSslErrors(QList<QSslError>);
         public slots:
             void getVerificationCode(QString);
+            void confirmVerificationCode(QString);
     };
 }
 

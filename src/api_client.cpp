@@ -2,6 +2,8 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QEventLoop>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMap>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -103,6 +105,39 @@ void ApiClient::getResponse(QUrl url) {
     // signal handler picks up from here
 }
 
+void ApiClient::putResponse(QUrl url, QString headerName, QString headerValue) {
+    // Request and get from manager
+    qDebug() << "getResponse" << url.toString();
+    QNetworkRequest req(url);
+    req.setRawHeader("Content-Type", "application/json");
+
+    QByteArray hName;
+    hName.append(headerName);
+    QByteArray hValue;
+    hValue.append(headerValue);
+    req.setRawHeader(hName, hValue);
+
+    QJsonDocument wrap;
+    QJsonObject object;
+
+    QString b64SignalingKey(this->conf->getSignalingKey().toBase64());
+    object["signalingKey"] = b64SignalingKey;
+    object["supportsSms"] = false;
+    object["registrationId"] = QString::number(this->conf->getRegistrationId());
+
+    wrap.setObject(object);
+
+    QNetworkReply *reply = this->mgr.put(req, wrap.toJson());
+
+    // XXX: This is where the ssl must be ignored for it to work
+    // but we haven't told the user yet what is ignored o_O
+    // Potentially nasty
+    reply->ignoreSslErrors();
+    QObject::connect(reply, &QNetworkReply::sslErrors, this, &ApiClient::printSslErrors);
+
+    // signal handler picks up from here
+}
+
 void ApiClient::handleNetworkResponse(QNetworkReply *reply) {
     ApiResponse *res = NULL;
     switch (reply->error()) {
@@ -149,6 +184,25 @@ void ApiClient::getVerificationCode(QString transport) {
 
     // Everything is handled by signals from this point on
     this->getResponse(codeUrl);
+}
+
+void ApiClient::confirmVerificationCode(QString code) {
+    QString baseResource("accounts");
+    QString resource("code");
+
+    // The code may require fixing
+    // This is the obvious case, don't care about others
+    code.remove("-");
+
+    // Basic auth Base64(number:password) where password is random 16-byte ASCII
+    QByteArray authArray;
+    authArray.append(this->conf->getNumber() + ":" + this->conf->getPassword());
+    QString basicAuth("Basic " + authArray.toBase64());
+
+    QString path = QString(baseResource) + QString("/") + resource + QString("/") + code;
+    QUrl url = this->genPath(path);
+
+    this->putResponse(url, "Authorization", basicAuth);
 }
 
 ApiClient::~ApiClient() {
