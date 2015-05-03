@@ -36,6 +36,14 @@ ClientConf::ClientConf(QString confDir, QObject *parent) : QObject(parent) {
     this->preKeyStore = BtxPreKeyStore(this->confDirPath + QString("/prekeys"), this->confDirPath + QString("/signed_prekeys"), this->keyHelper);
 }
 
+quint64 ClientConf::getRegistrationId() {
+    return this->registrationId;
+}
+
+QByteArray ClientConf::getSignalingKey() {
+    return this->signalingKey;
+}
+
 void ClientConf::verifyConfDir() {
     if (!this->confDir.exists()) {
         qDebug() << "Creating" << this->confDirPath;

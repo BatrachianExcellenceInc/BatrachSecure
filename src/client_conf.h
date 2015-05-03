@@ -17,6 +17,8 @@ namespace BtxSecurity {
         public:
             // methods
             explicit ClientConf(QString confDir, QObject *parent = 0);
+            quint64 getRegistrationId();
+            QByteArray getSignalingKey();
         private:
             // members
             KeyHelper keyHelper;
