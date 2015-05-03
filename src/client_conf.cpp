@@ -30,6 +30,7 @@ ClientConf::ClientConf(QString confDir, QObject *parent) : QObject(parent) {
 
     this->verifyConfDir();
     this->verifyRegistrationId();
+    this->verifySignalingKey();
     this->verifyIdentityKeyPair();
 
     this->preKeyStore = BtxPreKeyStore(this->confDirPath + QString("/prekeys"), this->confDirPath + QString("/signed_prekeys"), this->keyHelper);
@@ -115,6 +116,36 @@ void ClientConf::verifyIdentityKeyPair() {
         DjbECPrivateKey ecPrivate(privateKey);
 
         this->identityKeyPair = IdentityKeyPair(ikPublic, ecPrivate);
+    }
+}
+
+void ClientConf::verifySignalingKey() {
+    QString signalKeyFilePath = QString(this->confDirPath + QString("/signaling.key"));
+    QFile signalKeyFile(signalKeyFilePath);
+
+    qDebug() << signalKeyFilePath;
+    if (!signalKeyFile.exists()) {
+        this->signalingKey = this->keyHelper.generateSignalingKey();
+
+        qDebug() << "Generated signaling key" << this->signalingKey;
+
+        if (!signalKeyFile.open(QIODevice::WriteOnly)) {
+            throw ClientConfException(QString("Could not create signaling key file " + signalKeyFilePath));
+        }
+
+        // Because we want to write easily
+        QDataStream signalKeyFileStream(&signalKeyFile);
+        signalKeyFileStream << this->signalingKey << "\r\n";
+    } else {
+        if (!signalKeyFile.open(QIODevice::ReadOnly)) {
+            throw ClientConfException(QString("Could not open signaling key file " + signalKeyFilePath));
+        }
+
+        // Read similarly
+        QDataStream signalKeyFileStream(&signalKeyFile);
+        signalKeyFileStream >> this->signalingKey;
+
+        qDebug() << "Read signaling key" << this->signalingKey.size();
     }
 }
 

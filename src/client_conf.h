@@ -25,11 +25,13 @@ namespace BtxSecurity {
             QDir confDir;
 
             quint64 registrationId;
+            QByteArray signalingKey;
             IdentityKeyPair identityKeyPair;
 
             // methods
             void verifyConfDir();
             void verifyRegistrationId();
+            void verifySignalingKey();
             void verifyIdentityKeyPair();
     };
 }
