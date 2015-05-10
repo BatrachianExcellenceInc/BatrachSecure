@@ -34,7 +34,19 @@ Clone [libcurve25519](https://github.com/CODeRUS/libcurve25519)
 and [libaxolotl](https://github.com/CODeRUS/libaxolotl) onto the same level as this code
 and compile them in that order.
 
-    $ LD_LIBRARY_PATH=../libcurve25519/:../libaxolotl-qt5/:$LD_LIBRARY_PATH \
+Then clone and compile [libtextsecure-qt5](https://github.com/BatrachianExcellenceInc/libtextsecure-qt5)
+
+Usage
+-----
+
+The easy way is to use ``client.sh``, whose first-born parameter is the number of the client
+among a multitude of parallell test client configurations.
+
+    $ ./client.sh 1 --number +358501234568 --confirm-verification-code 352-608
+
+The hard way simply involves quite some typing.
+
+    $ LD_LIBRARY_PATH=../libcurve25519/:../libaxolotl-qt5/:../libtextsecure-qt5/:$LD_LIBRARY_PATH \
       ./BtxSecure http://localhost:8080 --get-verification-code --transport dev \
       --number +358501234567; echo
 

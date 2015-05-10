@@ -7,9 +7,9 @@
 #include <QFile>
 #include <QMetaObject>
 #include <QString>
-#include "api_client.h"
+#include "src/api_client.h"
 
-using namespace BtxSecurity;
+using namespace TextSecure;
 
 const QString DEFAULT_BASE_URL("https://textsecure-service.whispersystems.org/");
 const QString DEFAULT_CONF_DIR(".btxsec/");

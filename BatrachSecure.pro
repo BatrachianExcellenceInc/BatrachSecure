@@ -7,12 +7,12 @@ CONFIG   += console debug
 CONFIG   -= app_bundle
 TEMPLATE = app
 
-HEADERS += src/api_client.h src/btx_exception.h src/client_conf.h src/pre_key_store.h
-SOURCES += src/main.cpp src/btx_exception.cpp src/api_client.cpp src/client_conf.cpp src/pre_key_store.cpp
+# HEADERS += src/api_client.h src/btx_exception.h src/client_conf.h src/pre_key_store.h
+SOURCES += src/main.cpp
 
-INCLUDEPATH += ../libaxolotl-qt5/
+INCLUDEPATH += ../libaxolotl-qt5/ ../libtextsecure-qt5/
 
-LIBS += -L../libaxolotl-qt5/ -L../libcurve25519/ -laxolotl -lcurve25519
+LIBS += -L../libcurve25519/ -L../libaxolotl-qt5/ -L ../libtextsecure-qt5/ -lcurve25519 -laxolotl -ltextsecureqt5
 
 QMAKE_CXXFLAGS += -Wall -Wextra -Werror -pedantic -std=c++11 -O2 -g -ggdb3 -fno-inline
 

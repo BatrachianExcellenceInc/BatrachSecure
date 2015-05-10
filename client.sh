@@ -7,7 +7,7 @@
 set -eu
 
 export QT_FATAL_WARNINGS=1
-export LD_LIBRARY_PATH=../libcurve25519/:../libaxolotl-qt5/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=../libcurve25519/:../libaxolotl-qt5/:../libtextsecure-qt5/:$LD_LIBRARY_PATH
 
 client_num=$1
 shift 1
